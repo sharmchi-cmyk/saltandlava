@@ -25,7 +25,7 @@ export default function MasonryGrid({ photos }: MasonryGridProps) {
       <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3">
         {photos.map((photo) => (
           <div
-            key={photo.filename}
+            key={photo.src}
             className="break-inside-avoid mb-3 group relative cursor-pointer overflow-hidden rounded-sm"
             onClick={() => setLightbox(photo)}
           >
