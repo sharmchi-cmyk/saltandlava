@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import MasonryGrid from "./MasonryGrid";
+import { formatLocationLabel } from "@/lib/format";
 import type { Photo } from "@/lib/photos";
 
 interface YearTabsProps {
@@ -28,7 +29,9 @@ export default function YearTabs({
   const visiblePhotos = useMemo(() => {
     const yearPhotos = photosByYear[activeYear] ?? [];
     if (activeLocation === "All") return yearPhotos;
-    return yearPhotos.filter((p) => p.location.name === activeLocation);
+    return yearPhotos.filter(
+      (p) => formatLocationLabel(p.location.name) === activeLocation
+    );
   }, [activeYear, activeLocation, photosByYear]);
 
   function handleYearChange(year: number) {

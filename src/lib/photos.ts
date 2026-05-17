@@ -1,5 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { formatLocationLabel } from "./format";
+
+export { formatLocationLabel };
 
 export interface PhotoLocation {
   name: string;
@@ -135,7 +138,7 @@ export function getLocationsForYear(year: number): string[] {
   return [
     ...new Set(
       getPhotosByYear(year)
-        .map((p) => p.location.name)
+        .map((p) => formatLocationLabel(p.location.name))
         .filter(Boolean)
     ),
   ].sort();
