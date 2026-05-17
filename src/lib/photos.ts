@@ -25,33 +25,104 @@ export interface SiteStats {
   yearRange: string;
 }
 
+interface RawMeta {
+  filename: string;
+  year: number;
+  date: string;
+  location?: { name?: string; latitude?: number | null; longitude?: number | null };
+  camera?: { make: string; model: string };
+  aesthetic_score?: number;
+  favorite?: boolean;
+}
+
+const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+
 let _cache: Photo[] | null = null;
+
+function buildSrc(absolutePath: string): string {
+  const publicDir = path.join(process.cwd(), "public");
+  const rel = path.relative(publicDir, absolutePath);
+  const segments = rel.split(path.sep).map(encodeURIComponent);
+  return "/" + segments.join("/");
+}
+
+function collectPhotos(
+  dir: string,
+  year: number,
+  topFolder: string | null,
+  metaMap: Map<string, RawMeta>,
+  results: Photo[]
+): void {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
+
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      collectPhotos(fullPath, year, topFolder ?? entry.name, metaMap, results);
+    } else {
+      const ext = path.extname(entry.name).toLowerCase();
+      if (!IMAGE_EXTS.has(ext)) continue;
+
+      const meta = metaMap.get(entry.name);
+      const locationName = topFolder ?? meta?.location?.name ?? "";
+
+      results.push({
+        filename: entry.name,
+        year,
+        date: meta?.date ?? `${year}-01-01T00:00:00`,
+        location: {
+          name: locationName,
+          latitude: meta?.location?.latitude ?? null,
+          longitude: meta?.location?.longitude ?? null,
+        },
+        camera: meta?.camera ?? { make: "", model: "" },
+        aesthetic_score: meta?.aesthetic_score ?? 5,
+        favorite: meta?.favorite ?? false,
+        src: buildSrc(fullPath),
+      });
+    }
+  }
+}
 
 function loadPhotos(): Photo[] {
   if (_cache) return _cache;
 
-  const metaPath = path.join(process.cwd(), "public", "metadata.json");
-  if (!fs.existsSync(metaPath)) {
+  const photosDir = path.join(process.cwd(), "public", "photos");
+  if (!fs.existsSync(photosDir)) {
     _cache = [];
     return _cache;
   }
 
-  const raw: Omit<Photo, "src">[] = JSON.parse(
-    fs.readFileSync(metaPath, "utf8")
-  );
+  const metaPath = path.join(process.cwd(), "public", "metadata.json");
+  const metaMap = new Map<string, RawMeta>();
+  if (fs.existsSync(metaPath)) {
+    const raw: RawMeta[] = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+    for (const m of raw) metaMap.set(m.filename, m);
+  }
 
-  _cache = raw.map((p) => ({
-    ...p,
-    src: `/photos/${p.year}/${p.filename}`,
-  }));
+  const photos: Photo[] = [];
 
+  const yearDirs = fs.readdirSync(photosDir).filter((d) => /^\d{4}$/.test(d));
+  for (const yearStr of yearDirs) {
+    collectPhotos(
+      path.join(photosDir, yearStr),
+      parseInt(yearStr, 10),
+      null,
+      metaMap,
+      photos
+    );
+  }
+
+  _cache = photos;
   return _cache;
-}
-
-function extractCountry(locationName: string): string {
-  if (!locationName) return "Unknown";
-  const parts = locationName.split(",");
-  return parts[parts.length - 1].trim() || "Unknown";
 }
 
 export function getPhotosByYear(year: number): Photo[] {
@@ -60,13 +131,14 @@ export function getPhotosByYear(year: number): Photo[] {
     .sort((a, b) => b.aesthetic_score - a.aesthetic_score);
 }
 
-export function getCountriesForYear(year: number): string[] {
-  const countries = [
+export function getLocationsForYear(year: number): string[] {
+  return [
     ...new Set(
-      getPhotosByYear(year).map((p) => extractCountry(p.location.name))
+      getPhotosByYear(year)
+        .map((p) => p.location.name)
+        .filter(Boolean)
     ),
   ].sort();
-  return countries;
 }
 
 export function getHeroPhoto(): Photo | null {
@@ -84,13 +156,13 @@ export function getAvailableYears(): number[] {
 
 export function getAllStats(): SiteStats {
   const photos = loadPhotos();
-  const countries = new Set(
-    photos.map((p) => extractCountry(p.location.name)).filter(Boolean)
+  const locations = new Set(
+    photos.map((p) => p.location.name).filter(Boolean)
   );
   const years = getAvailableYears();
   return {
     total: photos.length,
-    countries: countries.size,
+    countries: locations.size,
     years: years.length,
     yearRange:
       years.length > 1

@@ -6,7 +6,7 @@ import {
   getAllStats,
   getAvailableYears,
   getPhotosByYear,
-  getCountriesForYear,
+  getLocationsForYear,
   type Photo,
 } from "@/lib/photos";
 
@@ -19,8 +19,8 @@ export default function Home() {
     years.map((y) => [y, getPhotosByYear(y)])
   ) as Record<number, Photo[]>;
 
-  const countriesByYear = Object.fromEntries(
-    years.map((y) => [y, getCountriesForYear(y)])
+  const locationsByYear = Object.fromEntries(
+    years.map((y) => [y, getLocationsForYear(y)])
   ) as Record<number, string[]>;
 
   return (
@@ -31,7 +31,7 @@ export default function Home() {
         <YearTabs
           years={years}
           photosByYear={photosByYear}
-          countriesByYear={countriesByYear}
+          locationsByYear={locationsByYear}
         />
       </section>
     </>

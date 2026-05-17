@@ -7,37 +7,33 @@ import type { Photo } from "@/lib/photos";
 interface YearTabsProps {
   years: number[];
   photosByYear: Record<number, Photo[]>;
-  countriesByYear: Record<number, string[]>;
+  locationsByYear: Record<number, string[]>;
 }
 
 export default function YearTabs({
   years,
   photosByYear,
-  countriesByYear,
+  locationsByYear,
 }: YearTabsProps) {
   const [activeYear, setActiveYear] = useState<number>(
     years[years.length - 1] ?? 2026
   );
-  const [activeCountry, setActiveCountry] = useState<string>("All");
+  const [activeLocation, setActiveLocation] = useState<string>("All");
 
-  const countries = useMemo(
-    () => ["All", ...(countriesByYear[activeYear] ?? [])],
-    [activeYear, countriesByYear]
+  const locations = useMemo(
+    () => ["All", ...(locationsByYear[activeYear] ?? [])],
+    [activeYear, locationsByYear]
   );
 
   const visiblePhotos = useMemo(() => {
     const yearPhotos = photosByYear[activeYear] ?? [];
-    if (activeCountry === "All") return yearPhotos;
-    return yearPhotos.filter((p) => {
-      const parts = p.location.name.split(",");
-      const country = parts[parts.length - 1].trim();
-      return country === activeCountry;
-    });
-  }, [activeYear, activeCountry, photosByYear]);
+    if (activeLocation === "All") return yearPhotos;
+    return yearPhotos.filter((p) => p.location.name === activeLocation);
+  }, [activeYear, activeLocation, photosByYear]);
 
   function handleYearChange(year: number) {
     setActiveYear(year);
-    setActiveCountry("All");
+    setActiveLocation("All");
   }
 
   return (
@@ -60,21 +56,21 @@ export default function YearTabs({
         ))}
       </div>
 
-      {/* country filter pills */}
-      {countries.length > 1 && (
+      {/* location filter pills */}
+      {locations.length > 1 && (
         <div className="flex flex-wrap gap-2 px-6 md:px-12 pt-6 pb-2">
-          {countries.map((country) => (
+          {locations.map((loc) => (
             <button
-              key={country}
-              onClick={() => setActiveCountry(country)}
+              key={loc}
+              onClick={() => setActiveLocation(loc)}
               className={[
                 "px-4 py-1.5 rounded-full border text-xs font-sans tracking-widest uppercase transition-colors duration-200",
-                activeCountry === country
+                activeLocation === loc
                   ? "border-gold text-gold bg-gold/10"
                   : "border-border text-muted hover:border-offwhite/40 hover:text-offwhite/60",
               ].join(" ")}
             >
-              {country}
+              {loc}
             </button>
           ))}
         </div>
