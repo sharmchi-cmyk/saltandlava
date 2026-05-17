@@ -1,0 +1,38 @@
+[
+  {
+    "filename": "DSCF0626.JPG",
+    "year": 2024,
+    "date": "2024-01-01T00:00:00",
+    "location": { "name": "Unknown", "latitude": null, "longitude": null },
+    "camera": { "make": "FUJIFILM", "model": "X-T50" },
+    "aesthetic_score": 0.9,
+    "favorite": true
+  },
+  {
+    "filename": "DSCF0755.JPG",
+    "year": 2024,
+    "date": "2024-01-01T00:00:00",
+    "location": { "name": "Unknown", "latitude": null, "longitude": null },
+    "camera": { "make": "FUJIFILM", "model": "X-T50" },
+    "aesthetic_score": 0.9,
+    "favorite": true
+  },
+  {
+    "filename": "DSCF2336.JPG",
+    "year": 2024,
+    "date": "2024-01-01T00:00:00",
+    "location": { "name": "Unknown", "latitude": null, "longitude": null },
+    "camera": { "make": "FUJIFILM", "model": "X-T50" },
+    "aesthetic_score": 0.9,
+    "favorite": true
+  },
+  {
+    "filename": "DSCF2389.JPG",
+    "year": 2024,
+    "date": "2024-01-01T00:00:00",
+    "location": { "name": "Unknown", "latitude": null, "longitude": null },
+    "camera": { "make": "FUJIFILM", "model": "X-T50" },
+    "aesthetic_score": 0.9,
+    "favorite": true
+  }
+]
